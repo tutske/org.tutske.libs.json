@@ -404,6 +404,20 @@ public class Json {
 		);
 	}
 
+	public static JsonNode valueOf (Collection<?> value) {
+		return (
+			value == null ? JsonNodeFactory.instance.nullNode () :
+			arrayNode (value)
+		);
+	}
+
+	public static JsonNode valueOf (Map<String, ?> value) {
+		return (
+			value == null ? JsonNodeFactory.instance.nullNode () :
+			objectNode (value)
+		);
+	}
+
 	public static JsonNode valueOf (short value) { return JsonNodeFactory.instance.numberNode (value); }
 	public static JsonNode valueOf (byte value) { return JsonNodeFactory.instance.numberNode (value); }
 	public static JsonNode valueOf (int value) { return JsonNodeFactory.instance.numberNode (value); }
@@ -428,6 +442,9 @@ public class Json {
 		if ( value instanceof Byte) { return valueOf ((byte) value); }
 		if ( value instanceof Short) { return valueOf ((short) value); }
 		if ( value instanceof byte [] ) { return valueOf ((byte []) value); }
+
+		if ( value instanceof Map ) { return objectNode ((Map) value); }
+		if ( value instanceof Collection ) { return arrayNode ((Collection) value); }
 
 		return JsonNodeFactory.instance.pojoNode (value);
 	}

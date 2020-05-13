@@ -8,6 +8,10 @@ import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 public class JsonValueTest {
@@ -20,6 +24,9 @@ public class JsonValueTest {
 		assertThat (Json.valueOf ((BigInteger) null).isNull (), is (true));
 		assertThat (Json.valueOf ((BigDecimal) null).isNull (), is (true));
 		assertThat (Json.valueOf ((byte []) null).isNull (), is (true));
+		assertThat (Json.valueOf ((Map) null).isNull (), is (true));
+		assertThat (Json.valueOf ((List) null).isNull (), is (true));
+		assertThat (Json.valueOf ((Set) null).isNull (), is (true));
 	}
 
 	@Test
@@ -125,6 +132,33 @@ public class JsonValueTest {
 		byte [] bytes = new byte [] { (byte) 0xa1, (byte) 0xb1, (byte) 0x1c };
 		assertThat (Json.valueOf (bytes).isBinary (), is (true));
 		assertThat (Json.valueOf ((Object) bytes).isBinary (), is (true));
+	}
+
+	@Test
+	public void it_should_turn_list_collections_into_arraynodes () {
+		List<Object> list = List.of ("A", "B", "C", "D");
+		assertThat (Json.valueOf (list).isContainerNode (), is (true));
+		assertThat (Json.valueOf (list).isArray (), is (true));
+		assertThat (Json.valueOf ((Object) list).isContainerNode (), is (true));
+		assertThat (Json.valueOf ((Object) list).isArray (), is (true));
+	}
+
+	@Test
+	public void it_should_turn_set_collections_into_arraynodes () {
+		Set<Object> set = Set.of ("A", "B", "C", "D");
+		assertThat (Json.valueOf (set).isContainerNode (), is (true));
+		assertThat (Json.valueOf (set).isArray (), is (true));
+		assertThat (Json.valueOf ((Object) set).isContainerNode (), is (true));
+		assertThat (Json.valueOf ((Object) set).isArray (), is (true));
+	}
+
+	@Test
+	public void it_should_turn_maps_into_objectnodes () {
+		Map<String, Object> map = Collections.singletonMap ("key", "value");
+		assertThat (Json.valueOf (map).isContainerNode (), is (true));
+		assertThat (Json.valueOf (map).isObject (), is (true));
+		assertThat (Json.valueOf ((Object) map).isContainerNode (), is (true));
+		assertThat (Json.valueOf ((Object) map).isObject (), is (true));
 	}
 
 }
