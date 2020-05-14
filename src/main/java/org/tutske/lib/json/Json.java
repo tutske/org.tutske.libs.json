@@ -19,12 +19,33 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collector;
 
 
 public class Json {
 
 	public static interface JsonCreator<T extends JsonNode> {
 		public T create (Object ... args);
+	}
+
+	public static <T> Collector<T, ArrayNode, ArrayNode> collectToArray () {
+		return Collector.of (
+			JsonNodeFactory.instance::arrayNode,
+			(acc, curr) -> { acc.add (valueOf (curr)); },
+			ArrayNode::addAll
+		);
+	}
+
+	public static Collector<Map.Entry<String, ?>, ObjectNode, ObjectNode> collectToObject () {
+		return collectToObject (Map.Entry::getKey, Map.Entry::getValue);
+	}
+
+	public static <T> Collector<T, ObjectNode, ObjectNode> collectToObject (Function<T, String> keyFn, Function<T, ?> valueFn) {
+		return Collector.of (
+			JsonNodeFactory.instance::objectNode,
+			(acc, curr) -> acc.set (keyFn.apply (curr), valueOf (valueFn.apply (curr))),
+			(l, r) -> (ObjectNode) l.setAll (r)
+		);
 	}
 
 	public static ObjectNode objectNode (Object ... args) {
