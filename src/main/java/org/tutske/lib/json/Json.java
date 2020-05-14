@@ -1,12 +1,16 @@
 package org.tutske.lib.json;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.MissingNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
@@ -468,6 +472,51 @@ public class Json {
 		if ( value instanceof Collection ) { return arrayNode ((Collection) value); }
 
 		return JsonNodeFactory.instance.pojoNode (value);
+	}
+
+	public static String stringify (Object node) {
+		return stringify (Mappers.instance, node);
+	}
+
+	public static String stringify (ObjectMapper mapper, Object node) {
+		try { return mapper.writeValueAsString (node); }
+		catch ( IOException e ) { throw new RuntimeException (e); }
+	}
+
+	public static String stringify (ObjectWriter writer, Object node) {
+		try { return writer.writeValueAsString (node); }
+		catch ( IOException e ) { throw new RuntimeException (e); }
+	}
+
+	public static String prettyStringify (Object node) {
+		return prettyStringify (Mappers.instance, node);
+	}
+
+	public static String prettyStringify (ObjectMapper mapper, Object node) {
+		return stringify (mapper.writerWithDefaultPrettyPrinter (), node);
+	}
+
+	public static String prettyStringify (ObjectWriter writer, Object node) {
+		return stringify (writer.withDefaultPrettyPrinter (), node);
+	}
+
+	public static <T extends JsonNode> T parse (String json)
+	throws JsonParseException {
+		return parse (Mappers.instance, json);
+	}
+
+	public static <T extends JsonNode> T parse (ObjectMapper mapper, String json)
+	throws JsonParseException {
+		try { return (T) mapper.readTree (json); }
+		catch (JsonParseException e ) { throw e; }
+		catch (IOException e ) { throw new RuntimeException (e); }
+	}
+
+	public static <T extends JsonNode> T parse (ObjectReader reader, String json)
+	throws JsonParseException {
+		try { return (T) reader.readTree (json); }
+		catch (JsonParseException e ) { throw e; }
+		catch (IOException e ) { throw new RuntimeException (e); }
 	}
 
 }
