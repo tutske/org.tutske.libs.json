@@ -10,6 +10,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -131,6 +132,21 @@ public class MappersTest {
 			gen.writeEndObject ();
 		});
 		return module;
+	}
+
+	@Test
+	public void it_should_allow_configuring_a_deserializer () throws IOException {
+		ObjectMapper mapper = Mappers.configure (new ObjectMapper (), module -> {
+			Mappers.deserialize (module, CustomEntity.class, (p, ctxt) -> (
+				new CustomEntity (1, "John Doe")
+			));
+		});
+
+		String json = "{ '__type__': 'CustomEntity', '1': 'John Doe' }".replaceAll ("'", "\"");
+		CustomEntity entity = mapper.readValue (json, CustomEntity.class);
+
+		assertThat (entity.id, is (1L));
+		assertThat (entity.name, is ("John Doe"));
 	}
 
 	public static class CustomEntity {

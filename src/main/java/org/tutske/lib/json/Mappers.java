@@ -1,10 +1,13 @@
 package org.tutske.lib.json;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
@@ -67,9 +70,23 @@ public class Mappers {
 		});
 	}
 
+	public static <T> void deserialize (SimpleModule module, Class<T> clazz, DeserializerFn<T> deserializer) {
+		module.addDeserializer (clazz, new StdDeserializer<T> (clazz) {
+			@Override public T deserialize (JsonParser p, DeserializationContext ctxt)
+			throws IOException {
+				return deserializer.deserialize (p, ctxt);
+			}
+		});
+	}
+
 	@FunctionalInterface
 	public static interface SerializerFn<T> {
 		public void serialize (T value, JsonGenerator gen, SerializerProvider provider) throws IOException;
+	}
+
+	@FunctionalInterface
+	public static interface DeserializerFn<T> {
+		public T deserialize (JsonParser p, DeserializationContext ctxt) throws IOException;
 	}
 
 }
