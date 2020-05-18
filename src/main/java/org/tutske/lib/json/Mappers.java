@@ -28,7 +28,7 @@ public class Mappers {
 			.registerModule (new JavaTimeModule ())
 			.registerModule (module (m -> m.addSerializer (
 				JsonException.class,
-				new JsonException.ResponseExceptionSerializer ()
+				new JsonException.JacksonSerializer ()
 			)))
 		;
 	}

@@ -3,6 +3,7 @@ package org.tutske.lib.json;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
@@ -37,8 +38,8 @@ public class JsonException extends RuntimeException {
 		this.data.setAll (extra);
 	}
 
-	public static class ResponseExceptionSerializer extends StdSerializer<JsonException> {
-		public ResponseExceptionSerializer () { super (JsonException.class); }
+	public static class JacksonSerializer extends StdSerializer<JsonException> {
+		public JacksonSerializer () { super (JsonException.class); }
 
 		@Override public void serialize (JsonException value, JsonGenerator gen, SerializerProvider provider)
 		throws IOException {
@@ -54,6 +55,10 @@ public class JsonException extends RuntimeException {
 
 			gen.writeEndObject ();
 		}
+	}
+
+	public static void configureJacksonMapper (SimpleModule module) {
+		module.addSerializer (JsonException.class, new JacksonSerializer ());
 	}
 
 }

@@ -12,7 +12,7 @@ public class TestUtils {
 	public static ObjectMapper createConfiguredMapper () {
 		ObjectMapper mapper = new ObjectMapper ();
 		SimpleModule module = new SimpleModule ();
-		module.addSerializer (new JsonException.ResponseExceptionSerializer ());
+		module.addSerializer (new JsonException.JacksonSerializer ());
 		mapper.registerModule (module);
 		return mapper;
 	}

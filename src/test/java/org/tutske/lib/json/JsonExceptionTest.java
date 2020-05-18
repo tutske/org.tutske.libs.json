@@ -6,6 +6,7 @@ import static org.tutske.lib.json.TestUtils.createConfiguredMapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
 
@@ -92,6 +93,32 @@ public class JsonExceptionTest {
 
 		JsonNode json = createConfiguredMapper ().valueToTree (exception);
 		assertThat (json.path ("key").asText (), is ("original value"));
+	}
+
+	@Test
+	public void it_should_serialize_with_a_custom_configured_mapper () {
+		ObjectMapper mapper = Mappers.configure (new ObjectMapper (), m -> {
+			m.addSerializer (JsonException.class, new JsonException.JacksonSerializer ());
+		});
+
+		Exception exception = new JsonException ("Test", Json.objectNode ("key", "value"));
+		JsonNode json = mapper.valueToTree (exception);
+
+		assertThat (json.path ("status").asText (), is ("nok"));
+		assertThat (json.path ("error").asText (), is ("Test"));
+		assertThat (json.path ("key").asText (), is ("value"));
+	}
+
+	@Test
+	public void it_should_serialize_with_a_method_configured_mapper () {
+		ObjectMapper mapper = Mappers.configure (new ObjectMapper (), JsonException::configureJacksonMapper);
+
+		Exception exception = new JsonException ("Test", Json.objectNode ("key", "value"));
+		JsonNode json = mapper.valueToTree (exception);
+
+		assertThat (json.path ("status").asText (), is ("nok"));
+		assertThat (json.path ("error").asText (), is ("Test"));
+		assertThat (json.path ("key").asText (), is ("value"));
 	}
 
 }
