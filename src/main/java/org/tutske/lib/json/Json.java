@@ -177,6 +177,13 @@ public class Json {
 		);
 	}
 
+	public static boolean contains (JsonNode node, JsonNode entry) {
+		if ( node.isArray () ) { return contains ((ArrayNode) node, entry); }
+		throw new JsonException ("Can only find in arrays",
+			objectNode ("json", node)
+		);
+	}
+
 	public static boolean contains (ArrayNode node, JsonNode entry) {
 		for ( JsonNode candidate : node ) {
 			if ( candidate.equals (entry) ) { return true; }
