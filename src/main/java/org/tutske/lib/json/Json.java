@@ -40,14 +40,36 @@ public class Json {
 		);
 	}
 
+	public static <T> Collector<T, ArrayNode, ArrayNode> collectToArray (ObjectMapper mapper) {
+		return Collector.of (
+			JsonNodeFactory.instance::arrayNode,
+			(acc, curr) -> { acc.add (mapper.valueToTree (curr)); },
+			ArrayNode::addAll
+		);
+	}
+
 	public static Collector<Map.Entry<String, ?>, ObjectNode, ObjectNode> collectToObject () {
 		return collectToObject (Map.Entry::getKey, Map.Entry::getValue);
+	}
+
+	public static Collector<Map.Entry<String, ?>, ObjectNode, ObjectNode> collectToObject (ObjectMapper mapper) {
+		return collectToObject (mapper, Map.Entry::getKey, Map.Entry::getValue);
 	}
 
 	public static <T> Collector<T, ObjectNode, ObjectNode> collectToObject (Function<T, String> keyFn, Function<T, ?> valueFn) {
 		return Collector.of (
 			JsonNodeFactory.instance::objectNode,
 			(acc, curr) -> acc.set (keyFn.apply (curr), valueOf (valueFn.apply (curr))),
+			(l, r) -> (ObjectNode) l.setAll (r)
+		);
+	}
+
+	public static <T> Collector<T, ObjectNode, ObjectNode> collectToObject (
+		ObjectMapper mapper, Function<T, String> keyFn, Function<T, ?> valueFn
+	) {
+		return Collector.of (
+			JsonNodeFactory.instance::objectNode,
+			(acc, curr) -> acc.set (keyFn.apply (curr), mapper.valueToTree (valueFn.apply (curr))),
 			(l, r) -> (ObjectNode) l.setAll (r)
 		);
 	}
