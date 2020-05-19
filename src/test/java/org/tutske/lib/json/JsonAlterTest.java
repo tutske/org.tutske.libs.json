@@ -510,6 +510,15 @@ public class JsonAlterTest {
 	}
 
 	@Test
+	public void it_should_compute_values_on_json_node_object_with_missing_keys () {
+		ObjectNode target = Json.objectNode ("first", 1);
+		ObjectNode result = Json.computeIfAbsent ((JsonNode) target, "second", (t, k) -> Json.valueOf (2));
+
+		assertThat (result, is (target));
+		assertThat (result.get ("second").intValue (), is (2));
+	}
+
+	@Test
 	public void it_should_not_compute_values_on_object_when_key_is_present () {
 		ObjectNode target = Json.objectNode ("first", 1);
 		ObjectNode result = Json.computeIfAbsent (target, "first", (t, k) -> {
@@ -518,6 +527,26 @@ public class JsonAlterTest {
 
 		assertThat (result, is (target));
 		assertThat (result.has ("second"), is (false));
+	}
+
+	@Test
+	public void it_should_not_compute_values_on_json_node_object_when_key_is_present () {
+		ObjectNode target = Json.objectNode ("first", 1);
+		ObjectNode result = Json.computeIfAbsent ((JsonNode) target, "first", (t, k) -> {
+			throw new RuntimeException ("Fail");
+		});
+
+		assertThat (result, is (target));
+		assertThat (result.has ("second"), is (false));
+	}
+
+	@Test
+	public void it_should_complain_when_computing_absent_values_on_non_objects () {
+		JsonException ex = assertThrows (JsonException.class, () -> {
+			Json.computeIfAbsent (Json.arrayNode (), "key", (t, k) -> Json.objectNode ());
+		});
+		assertThat (ex.getMessage ().toLowerCase (), containsString ("can only compute"));
+
 	}
 
 	@Test

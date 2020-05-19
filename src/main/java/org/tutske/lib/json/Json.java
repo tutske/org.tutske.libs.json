@@ -370,6 +370,11 @@ public class Json {
 		return target;
 	}
 
+	public static ObjectNode computeIfAbsent (JsonNode target, String key, BiFunction<ObjectNode, String, JsonNode> fn) {
+		if ( target.isObject () ) { return computeIfAbsent ((ObjectNode) target, key, fn); }
+		throw new JsonException ("Can only compute mising values on objects", objectNode ("json", target));
+	}
+
 	public static ObjectNode computeIfAbsent (ObjectNode target, String key, BiFunction<ObjectNode, String, JsonNode> fn) {
 		if ( ! target.has (key) ) {
 			target.set (key, fn.apply (target, key));
