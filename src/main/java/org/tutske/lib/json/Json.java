@@ -1,12 +1,16 @@
 package org.tutske.lib.json;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.MissingNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
@@ -19,12 +23,55 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collector;
 
 
 public class Json {
 
 	public static interface JsonCreator<T extends JsonNode> {
 		public T create (Object ... args);
+	}
+
+	public static <T> Collector<T, ArrayNode, ArrayNode> collectToArray () {
+		return Collector.of (
+			JsonNodeFactory.instance::arrayNode,
+			(acc, curr) -> { acc.add (valueOf (curr)); },
+			ArrayNode::addAll
+		);
+	}
+
+	public static <T> Collector<T, ArrayNode, ArrayNode> collectToArray (ObjectMapper mapper) {
+		return Collector.of (
+			JsonNodeFactory.instance::arrayNode,
+			(acc, curr) -> { acc.add (mapper.valueToTree (curr)); },
+			ArrayNode::addAll
+		);
+	}
+
+	public static Collector<Map.Entry<String, ?>, ObjectNode, ObjectNode> collectToObject () {
+		return collectToObject (Map.Entry::getKey, Map.Entry::getValue);
+	}
+
+	public static Collector<Map.Entry<String, ?>, ObjectNode, ObjectNode> collectToObject (ObjectMapper mapper) {
+		return collectToObject (mapper, Map.Entry::getKey, Map.Entry::getValue);
+	}
+
+	public static <T> Collector<T, ObjectNode, ObjectNode> collectToObject (Function<T, String> keyFn, Function<T, ?> valueFn) {
+		return Collector.of (
+			JsonNodeFactory.instance::objectNode,
+			(acc, curr) -> acc.set (keyFn.apply (curr), valueOf (valueFn.apply (curr))),
+			(l, r) -> (ObjectNode) l.setAll (r)
+		);
+	}
+
+	public static <T> Collector<T, ObjectNode, ObjectNode> collectToObject (
+		ObjectMapper mapper, Function<T, String> keyFn, Function<T, ?> valueFn
+	) {
+		return Collector.of (
+			JsonNodeFactory.instance::objectNode,
+			(acc, curr) -> acc.set (keyFn.apply (curr), mapper.valueToTree (valueFn.apply (curr))),
+			(l, r) -> (ObjectNode) l.setAll (r)
+		);
 	}
 
 	public static ObjectNode objectNode (Object ... args) {
@@ -127,6 +174,13 @@ public class Json {
 		return fn.apply (
 			args -> objectNode (mapper, args),
 			args -> arrayNode (mapper, args)
+		);
+	}
+
+	public static boolean contains (JsonNode node, JsonNode entry) {
+		if ( node.isArray () ) { return contains ((ArrayNode) node, entry); }
+		throw new JsonException ("Can only find in arrays",
+			objectNode ("json", node)
 		);
 	}
 
@@ -316,6 +370,11 @@ public class Json {
 		return target;
 	}
 
+	public static ObjectNode computeIfAbsent (JsonNode target, String key, BiFunction<ObjectNode, String, JsonNode> fn) {
+		if ( target.isObject () ) { return computeIfAbsent ((ObjectNode) target, key, fn); }
+		throw new JsonException ("Can only compute mising values on objects", objectNode ("json", target));
+	}
+
 	public static ObjectNode computeIfAbsent (ObjectNode target, String key, BiFunction<ObjectNode, String, JsonNode> fn) {
 		if ( ! target.has (key) ) {
 			target.set (key, fn.apply (target, key));
@@ -404,6 +463,20 @@ public class Json {
 		);
 	}
 
+	public static JsonNode valueOf (Collection<?> value) {
+		return (
+			value == null ? JsonNodeFactory.instance.nullNode () :
+			arrayNode (value)
+		);
+	}
+
+	public static JsonNode valueOf (Map<String, ?> value) {
+		return (
+			value == null ? JsonNodeFactory.instance.nullNode () :
+			objectNode (value)
+		);
+	}
+
 	public static JsonNode valueOf (short value) { return JsonNodeFactory.instance.numberNode (value); }
 	public static JsonNode valueOf (byte value) { return JsonNodeFactory.instance.numberNode (value); }
 	public static JsonNode valueOf (int value) { return JsonNodeFactory.instance.numberNode (value); }
@@ -429,7 +502,55 @@ public class Json {
 		if ( value instanceof Short) { return valueOf ((short) value); }
 		if ( value instanceof byte [] ) { return valueOf ((byte []) value); }
 
+		if ( value instanceof Map ) { return objectNode ((Map) value); }
+		if ( value instanceof Collection ) { return arrayNode ((Collection) value); }
+
 		return JsonNodeFactory.instance.pojoNode (value);
+	}
+
+	public static String stringify (Object node) {
+		return stringify (Mappers.instance, node);
+	}
+
+	public static String stringify (ObjectMapper mapper, Object node) {
+		try { return mapper.writeValueAsString (node); }
+		catch ( IOException e ) { throw new RuntimeException (e); }
+	}
+
+	public static String stringify (ObjectWriter writer, Object node) {
+		try { return writer.writeValueAsString (node); }
+		catch ( IOException e ) { throw new RuntimeException (e); }
+	}
+
+	public static String prettyStringify (Object node) {
+		return prettyStringify (Mappers.instance, node);
+	}
+
+	public static String prettyStringify (ObjectMapper mapper, Object node) {
+		return stringify (mapper.writerWithDefaultPrettyPrinter (), node);
+	}
+
+	public static String prettyStringify (ObjectWriter writer, Object node) {
+		return stringify (writer.withDefaultPrettyPrinter (), node);
+	}
+
+	public static <T extends JsonNode> T parse (String json)
+	throws JsonParseException {
+		return parse (Mappers.instance, json);
+	}
+
+	public static <T extends JsonNode> T parse (ObjectMapper mapper, String json)
+	throws JsonParseException {
+		try { return (T) mapper.readTree (json); }
+		catch (JsonParseException e ) { throw e; }
+		catch (IOException e ) { throw new RuntimeException (e); }
+	}
+
+	public static <T extends JsonNode> T parse (ObjectReader reader, String json)
+	throws JsonParseException {
+		try { return (T) reader.readTree (json); }
+		catch (JsonParseException e ) { throw e; }
+		catch (IOException e ) { throw new RuntimeException (e); }
 	}
 
 }

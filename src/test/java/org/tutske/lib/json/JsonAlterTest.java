@@ -25,15 +25,43 @@ public class JsonAlterTest {
 	}
 
 	@Test
+	public void it_should_check_if_a_json_node_array_contains_an_element () {
+		JsonNode node = Json.objectNode ();
+		ArrayNode arr = Json.arrayNode (1, node, 2);
+
+		assertThat (Json.contains ((JsonNode) arr, node), is (true));
+	}
+
+	@Test
 	public void it_should_say_similar_objects_are_contained () {
 		ArrayNode arr = Json.arrayNode (1, Json.objectNode (), 2);
 		assertThat (Json.contains (arr, Json.objectNode ()), is (true));
 	}
 
 	@Test
-	public void it_should_say_when_the_an_array_does_not_contain_an_element () {
+	public void it_should_say_similar_objects_are_contained_in_a_json_node_array () {
+		ArrayNode arr = Json.arrayNode (1, Json.objectNode (), 2);
+		assertThat (Json.contains ((JsonNode) arr, Json.objectNode ()), is (true));
+	}
+
+	@Test
+	public void it_should_say_when_an_array_does_not_contain_an_element () {
 		ArrayNode arr = Json.arrayNode (1, 2, 3);
 		assertThat (Json.contains (arr, Json.valueOf (4)), is (false));
+	}
+
+	@Test
+	public void it_should_say_when_a_json_node_array_does_not_contain_an_element () {
+		ArrayNode arr = Json.arrayNode (1, 2, 3);
+		assertThat (Json.contains ((JsonNode) arr, Json.valueOf (4)), is (false));
+	}
+
+	@Test
+	public void it_should_complain_when_checking_containment_in_no_array_nodes () {
+		JsonException ex = assertThrows (JsonException.class, () -> {
+			Json.contains (Json.valueOf (1), Json.valueOf (1));
+		});
+		assertThat (ex.getMessage (), containsString ("array"));
 	}
 
 	@Test
@@ -482,6 +510,15 @@ public class JsonAlterTest {
 	}
 
 	@Test
+	public void it_should_compute_values_on_json_node_object_with_missing_keys () {
+		ObjectNode target = Json.objectNode ("first", 1);
+		ObjectNode result = Json.computeIfAbsent ((JsonNode) target, "second", (t, k) -> Json.valueOf (2));
+
+		assertThat (result, is (target));
+		assertThat (result.get ("second").intValue (), is (2));
+	}
+
+	@Test
 	public void it_should_not_compute_values_on_object_when_key_is_present () {
 		ObjectNode target = Json.objectNode ("first", 1);
 		ObjectNode result = Json.computeIfAbsent (target, "first", (t, k) -> {
@@ -490,6 +527,26 @@ public class JsonAlterTest {
 
 		assertThat (result, is (target));
 		assertThat (result.has ("second"), is (false));
+	}
+
+	@Test
+	public void it_should_not_compute_values_on_json_node_object_when_key_is_present () {
+		ObjectNode target = Json.objectNode ("first", 1);
+		ObjectNode result = Json.computeIfAbsent ((JsonNode) target, "first", (t, k) -> {
+			throw new RuntimeException ("Fail");
+		});
+
+		assertThat (result, is (target));
+		assertThat (result.has ("second"), is (false));
+	}
+
+	@Test
+	public void it_should_complain_when_computing_absent_values_on_non_objects () {
+		JsonException ex = assertThrows (JsonException.class, () -> {
+			Json.computeIfAbsent (Json.arrayNode (), "key", (t, k) -> Json.objectNode ());
+		});
+		assertThat (ex.getMessage ().toLowerCase (), containsString ("can only compute"));
+
 	}
 
 	@Test
