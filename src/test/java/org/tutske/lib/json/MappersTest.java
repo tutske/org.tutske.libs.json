@@ -149,6 +149,16 @@ public class MappersTest {
 		assertThat (entity.name, is ("John Doe"));
 	}
 
+	@Test
+	public void it_should_allow_for_unknown_json_properties_with_base_mapper () throws IOException {
+		ObjectMapper mapper = Mappers.mapper ();
+		String json = "{ 'id': 1, 'name': 'John Doe' }".replaceAll ("'", "\"");
+
+		Named entity = mapper.readValue (json, Named.class);
+
+		assertThat (entity.name, is ("John Doe"));
+	}
+
 	public static class CustomEntity {
 		public final long id;
 		public final String name;
@@ -157,6 +167,11 @@ public class MappersTest {
 			this.id = id;
 			this.name = name;
 		}
+	}
+
+	public static class Named {
+		public String name;
+		public Named () {}
 	}
 
 }

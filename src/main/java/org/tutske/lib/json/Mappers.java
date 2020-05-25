@@ -3,6 +3,7 @@ package org.tutske.lib.json;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -23,6 +24,7 @@ public class Mappers {
 
 	public static ObjectMapper mapper () {
 		return new ObjectMapper ()
+			.disable (DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
 			.disable (SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 			.registerModule (new Jdk8Module ())
 			.registerModule (new JavaTimeModule ())
