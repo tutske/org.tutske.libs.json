@@ -1,6 +1,5 @@
 plugins {
-	id "org.tutske.gradle" version 'a.2.2'
-	id 'jacoco'
+	id "org.tutske.gradle" version 'a.2.4'
 }
 
 group = 'org.tutske.libs'
@@ -10,9 +9,9 @@ targetCompatibility = '11'
 
 dependencies {
 	api (
-		[ group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.9' ],
-		[ group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version: '2.9.9' ],
-		[ group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.9.9' ],
+		[ group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '[2.12,3)' ],
+		[ group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version: '[2.12,3)' ],
+		[ group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '[2.12,3)' ],
 	)
 	testImplementation (
 		[ group: 'junit', name: 'junit', version: '[1,)' ],
@@ -25,13 +24,5 @@ compileJava {
 	doFirst {
 		options.compilerArgs = [ '--module-path', classpath.asPath ]
 		classpath = files ()
-	}
-}
-
-jacocoTestReport {
-	reports {
-		xml.enabled false
-		csv.enabled false
-		html.destination file ("${buildDir}/reports/coverage")
 	}
 }

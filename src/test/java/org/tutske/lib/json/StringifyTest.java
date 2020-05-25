@@ -3,13 +3,10 @@ package org.tutske.lib.json;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThrows;
-import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.any;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -175,32 +172,6 @@ public class StringifyTest {
 		ObjectMapper mapper = Mappers.mapper (this::forceFailingSerialization);
 		RuntimeException ex = assertThrows (RuntimeException.class, () -> {
 			Json.stringify (mapper.writer (), new Object ());
-		});
-
-		assertThat (ex.getCause (), instanceOf (IOException.class));
-	}
-
-	@Test
-	public void it_should_propagate_io_exceptions_as_runtime_exceptions_when_deserializing_with_object_mappers ()
-	throws IOException {
-		ObjectMapper mapper = mock (ObjectMapper.class);
-		doThrow  (new IOException ("FORCE FAIL")).when (mapper).readTree (any (String.class));
-
-		RuntimeException ex = assertThrows (RuntimeException.class, () -> {
-			Json.parse (mapper, "{}");
-		});
-
-		assertThat (ex.getCause (), instanceOf (IOException.class));
-	}
-
-	@Test
-	public void it_should_propagate_io_exceptions_as_runtime_exceptions_when_deserializing_with_object_writers ()
-	throws IOException {
-		ObjectReader reader = mock (ObjectReader.class);
-		doThrow  (new IOException ("FORCE FAIL")).when (reader).readTree (any (String.class));
-
-		RuntimeException ex = assertThrows (RuntimeException.class, () -> {
-			Json.parse (reader, "{}");
 		});
 
 		assertThat (ex.getCause (), instanceOf (IOException.class));
