@@ -12,7 +12,9 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
@@ -196,6 +198,26 @@ public class StreamIntegrationTest {
 		assertThat (result.path ("def").asText (), is ("Jane Doe"));
 	}
 
+	@Test
+	public void it_should_turn_array_nodes_into_streams () {
+		ArrayNode arr = Json.arrayNode (1, 2, 3, 4);
+		List<Integer> numbers = Json.stream (arr).map (i -> i.intValue () * 2).collect (Collectors.toList ());
+		assertThat (numbers, contains (2, 4, 6, 8));
+	}
+
+	@Test
+	public void it_should_turn_arrays_of_objects_int_streams () {
+		ArrayNode arr = Json.arrayNode (
+			Json.objectNode ("name", "John"),
+			Json.objectNode ("name", "Jane")
+		);
+
+		List<String> names = Json.stream (arr, ObjectNode.class)
+			.map (o -> o.get ("name").asText ())
+			.collect (Collectors.toList ());
+
+		assertThat (names, contains ("John", "Jane"));
+	}
 
 	private static class User {
 		public final String id;

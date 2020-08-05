@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -24,6 +25,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collector;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 
 public class Json {
@@ -72,6 +75,14 @@ public class Json {
 			(acc, curr) -> acc.set (keyFn.apply (curr), mapper.valueToTree (valueFn.apply (curr))),
 			(l, r) -> (ObjectNode) l.setAll (r)
 		);
+	}
+
+	public static Stream<JsonNode> stream (JsonNode node) {
+		return StreamSupport.stream (node.spliterator (), false);
+	}
+
+	public static <T extends JsonNode> Stream<T> stream (JsonNode node, Class<T> clazz) {
+		return StreamSupport.stream (node.spliterator (), false).map (clazz::cast);
 	}
 
 	public static ObjectNode objectNode (Object ... args) {
