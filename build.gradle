@@ -4,8 +4,8 @@ plugins {
 
 group = 'org.tutske.libs'
 
-sourceCompatibility = '11'
-targetCompatibility = '11'
+java.sourceCompatibility = JavaVersion.VERSION_11
+java.targetCompatibility = JavaVersion.VERSION_11
 
 dependencies {
 	api (
@@ -22,7 +22,10 @@ dependencies {
 
 compileJava {
 	doFirst {
-		options.compilerArgs = [ '--module-path', classpath.asPath ]
+		options.compilerArgs = [
+			'--module-path', classpath.asPath,
+			'--release', '11'
+		]
 		classpath = files ()
 	}
 }
