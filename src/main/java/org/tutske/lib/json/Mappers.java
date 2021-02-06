@@ -49,12 +49,12 @@ public class Mappers {
 		return module;
 	}
 
-	public static ObjectMapper configure (ObjectMapper mapper, Module ... modules) {
+	public static <T extends ObjectMapper> T configure (T mapper, Module ... modules) {
 		for ( Module module : modules ) { mapper.registerModule (module); }
 		return mapper;
 	}
 
-	public static ObjectMapper configure (ObjectMapper mapper, Consumer<SimpleModule> ... configs) {
+	public static <T extends ObjectMapper> T configure (T mapper, Consumer<SimpleModule> ... configs) {
 		for ( Consumer<SimpleModule> config : configs ) {
 			SimpleModule module = new SimpleModule ();
 			config.accept (module);
