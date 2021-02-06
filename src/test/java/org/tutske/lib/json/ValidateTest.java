@@ -2,7 +2,7 @@ package org.tutske.lib.json;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.BigIntegerNode;
@@ -14,8 +14,8 @@ import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.LongNode;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import org.junit.Test;
-import org.junit.function.ThrowingRunnable;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -430,7 +430,7 @@ public class ValidateTest {
 		Validate.assureNonEmptyStrings (node, "key");
 	}
 
-	private void assertValidation (String contained, ThrowingRunnable runnable) {
+	private void assertValidation (String contained, Executable runnable) {
 		JsonException e = assertThrows (JsonException.class, runnable);
 		assertThat (e.getMessage (), containsString (contained));
 	}

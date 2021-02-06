@@ -6,7 +6,7 @@ import static org.hamcrest.Matchers.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.BooleanNode;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 
 public class JsonFunctionalCreationTest {

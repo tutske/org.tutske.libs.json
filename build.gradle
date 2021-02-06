@@ -15,9 +15,9 @@ dependencies {
 		[ group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '[2.12,3)' ],
 	)
 	testImplementation (
-		[ group: 'junit', name: 'junit', version: '[1,)' ],
-		[ group: 'org.hamcrest', name: 'hamcrest-all', version: '[1,)' ],
-		[ group: 'org.mockito', name: 'mockito-all', version: '[1,)' ]
+		[ group: 'org.hamcrest', name: 'hamcrest', version: '[2,3)' ],
+		[ group: 'org.junit.jupiter', name: 'junit-jupiter', version: '[5,6)' ],
+		[ group: 'org.mockito', name: 'mockito-core', version: '[2,3)' ]
 	)
 }
 
@@ -29,4 +29,8 @@ compileJava {
 		]
 		classpath = files ()
 	}
+}
+
+test {
+	useJUnitPlatform ()
 }
