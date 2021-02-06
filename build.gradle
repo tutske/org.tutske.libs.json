@@ -4,6 +4,7 @@ plugins {
 
 group = 'org.tutske.libs'
 
+jacoco.toolVersion = '0.8.6'
 java.sourceCompatibility = JavaVersion.VERSION_11
 java.targetCompatibility = JavaVersion.VERSION_11
 
