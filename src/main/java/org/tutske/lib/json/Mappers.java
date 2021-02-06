@@ -23,7 +23,11 @@ public class Mappers {
 	static final ObjectMapper instance = mapper ();
 
 	public static ObjectMapper mapper () {
-		return new ObjectMapper ()
+		return preconfigure (new ObjectMapper ());
+	}
+
+	public static <T extends ObjectMapper> T preconfigure (T mapper) {
+		mapper
 			.disable (DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
 			.disable (SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 			.registerModule (new Jdk8Module ())
@@ -31,8 +35,8 @@ public class Mappers {
 			.registerModule (module (m -> m.addSerializer (
 				JsonException.class,
 				new JsonException.JacksonSerializer ()
-			)))
-		;
+			)));
+		return mapper;
 	}
 
 	public static ObjectMapper mapper (Module ... modules) {
